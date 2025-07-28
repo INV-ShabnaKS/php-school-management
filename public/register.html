@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>student registration</title>
+        <style>
+            body{
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height:100vh;
+            }
+        </style>
+    </head>
+    <body>
+        
+        <form>
+            <h2>Add Student</h2>
+            <label for="fullname">Full Name:</label>
+            <input type="text" id="fullname" name="fullname" required ><br>
+            <label for="registerno">Register Number:</label>
+            <input type="text" id="registerno" name="registerno" required ><br>
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" required ><br>
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" required ><br>
+            <label for="course">Course:</label>
+            <select id="course" name="course" required><br>
+                <option value="">-- Select Course --</option>
+  
+            </select><br><br>
+            <button type="submit">Add Student</button>
+
+        </form>
+    </body>
+</html>
