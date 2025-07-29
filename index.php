@@ -14,10 +14,9 @@
 </head>
 <body>
     
-    <form action='public\login.html'>
-        <h2>SCHOOL-MANAGEMENT</h2>
-
+    <form action='public\login.html' style="text-align:center;">
+        <h1>SCHOOL-MANAGEMENT</h1>
         <br>
-        <button>Login</button></form>
+        <button style="padding: 15px 30px; font-size: 18px;">Login </button>
 </body>
 </html>
