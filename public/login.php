@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username'] = $username;
 
             echo "<form action='addstudent.php'><button>Add Student</button></form>";
-            echo "<form action='view_students.php'><button>View Students</button></form>";
+            echo "<form action='viewstudent.php'><button>View Students</button></form>";
             reset_attempts($conn, $username);
         } else {
             echo "Invalid password.";
