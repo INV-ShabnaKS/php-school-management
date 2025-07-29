@@ -13,9 +13,11 @@
   </style>
 </head>
 <body>
-    <?php
-    echo "SCHOOL-MANAGEMENT \n";
-    echo "<form action='public\login.html'><button>Login</button></form>";
-    ?>
+    
+    <form action='public\login.html'>
+        <h2>SCHOOL-MANAGEMENT</h2>
+
+        <br>
+        <button>Login</button></form>
 </body>
 </html>

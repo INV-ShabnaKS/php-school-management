@@ -1,6 +1,7 @@
 <?php
 date_default_timezone_set('Asia/Kolkata');
 include '../config/db.php';
+include 'header.php';
 
 
 function failed_attempt($conn, $username) {
@@ -72,9 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($password === $user['password']) {
             session_start();
             $_SESSION['username'] = $username;
+            header("Location: dashboard.php");
 
-            echo "<form action='addstudent.php'><button>Add Student</button></form>";
-            echo "<form action='viewstudent.php'><button>View Students</button></form>";
             reset_attempts($conn, $username);
         } else {
             echo "Invalid password.";

@@ -6,7 +6,7 @@ if (!isset($_SESSION['username'])) {
 }
 
 include '../config/db.php';
-
+include 'header.php';
 
 $limit = 5;
 
@@ -30,7 +30,8 @@ $total_pages = ceil($total_students / $limit);
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding-top:70px;
             text-align: center;
         }
         .card {
@@ -60,7 +61,7 @@ $total_pages = ceil($total_students / $limit);
 </head>
 <body>
 
-<h2>Student List</h2>
+<h2>Students List</h2>
 
 <?php
 

@@ -4,6 +4,7 @@ if (!isset($_SESSION['username'])) {
     header("Location: login.html");
     exit();
 }
+include 'header.php';
 ?>
 
 <!DOCTYPE html>

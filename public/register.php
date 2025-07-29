@@ -5,6 +5,7 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 include '../config/db.php';
+include 'header.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fullname = $_POST['fullname'];
