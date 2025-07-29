@@ -1,68 +1,88 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+date_default_timezone_set('Asia/Kolkata');
 include '../config/db.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+function failed_attempt($conn, $username) {
+    $stmt = $conn->prepare("SELECT * FROM login_attempts WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $attempt_result = $stmt->get_result();
+
+    if ($attempt_result->num_rows > 0) {
+        $attempt_row = $attempt_result->fetch_assoc();
+        $attempts = $attempt_row['attempts'] + 1;
+
+        if ($attempts >= 3) {
+            $blocked_until = date('Y-m-d H:i:s', time() + 60);
+            $stmt = $conn->prepare("UPDATE login_attempts SET attempts = ?, blocked_until = ? WHERE username = ?");
+            $stmt->bind_param("iss", $attempts, $blocked_until, $username);
+        } else {
+            $stmt = $conn->prepare("UPDATE login_attempts SET attempts = ?, last_attempt = NOW() WHERE username = ?");
+            $stmt->bind_param("is", $attempts, $username);
+        }
+        $stmt->execute();
+    } else {
+        $stmt = $conn->prepare("INSERT INTO login_attempts (username, attempts, last_attempt) VALUES (?, 1, NOW())");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+    }
+}
+
+function reset_attempts($conn, $username) {
+    $stmt = $conn->prepare("DELETE FROM login_attempts WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-   
-    $look = $conn->prepare("SELECT * FROM login_attempts WHERE username = ?");
-    $look->bind_param("s", $username);
-    $look->execute();
-    $attemptResult = $look->get_result();
-    $attemptData = $attemptResult->fetch_assoc();
+    $stmt = $conn->prepare("SELECT * FROM login_attempts WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $block_result = $stmt->get_result();
 
-    $current_time = date("Y-m-d H:i:s");
+    if ($block_result->num_rows > 0) {
+        $row = $block_result->fetch_assoc();
+        $current_time = time();
 
-    if ($attemptData && $attemptData['blocked_until'] > $current_time) {
-        echo "You are blocked from logging in until " . $attemptData['blocked_until'];
-        exit();
+        if (!empty($row['blocked_until'])) {
+            $blocked_until = strtotime($row['blocked_until']);
+
+            if ($current_time < $blocked_until) {
+                echo "You are blocked until: " . $row['blocked_until'];
+                exit();
+            } else {
+                reset_attempts($conn, $username);
+            }
+        }
     }
 
-    $look = $conn->prepare("SELECT * FROM admin_users WHERE username = ? AND password = ?");
-    $look->bind_param("ss", $username, $password);
-    $look->execute();
-    $userResult = $look->get_result();
+    $stmt = $conn->prepare("SELECT * FROM admin_users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $user_result = $stmt->get_result();
 
-    if ($userResult->num_rows > 0) {
-        
-        echo "Login successful! Welcome, $username";
+    if ($user_result->num_rows > 0) {
+        $user = $user_result->fetch_assoc();
 
-        
-        $look = $conn->prepare("DELETE FROM login_attempts WHERE username = ?");
-        $look->bind_param("s", $username);
-        $look->execute();
-    } else {
-     
-        if ($attemptData) {
-            $attempts = $attemptData['attempts'] + 1;
+        if ($password === $user['password']) {
+            session_start();
+            $_SESSION['username'] = $username;
 
-            if ($attempts >= 3) {
-                $blocked_until = date("Y-m-d H:i:s", strtotime("+5 minutes"));
-                $look = $conn->prepare("UPDATE login_attempts SET attempts = ?, last_attempt = ?, blocked_until = ? WHERE username = ?");
-                $look->bind_param("isss", $attempts, $current_time, $blocked_until, $username);
-                $look->execute();
-                echo "Too many failed attempts. You are blocked for 5 minutes.";
-            } else {
-                $look = $conn->prepare("UPDATE login_attempts SET attempts = ?, last_attempt = ? WHERE username = ?");
-                $look->bind_param("iss", $attempts, $current_time, $username);
-                $look->execute();
-                echo "Login failed. Attempt $attempts of 3.";
-            }
+            echo "<form action='add_student.php'><button>Add Student</button></form>";
+            echo "<form action='view_students.php'><button>View Students</button></form>";
+            reset_attempts($conn, $username);
         } else {
-           
-            $look = $conn->prepare("INSERT INTO login_attempts (username, attempts, last_attempt) VALUES (?, 1, ?)");
-            $look->bind_param("ss", $username, $current_time);
-            $look->execute();
-            echo "Login failed. Attempt 1 of 3.";
+            echo "Invalid password.";
+            failed_attempt($conn, $username);
         }
+    } else {
+        echo "User not found.";
+        failed_attempt($conn, $username);
     }
 }
 ?>
